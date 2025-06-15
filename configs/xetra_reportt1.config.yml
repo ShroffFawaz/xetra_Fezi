@@ -1,0 +1,20 @@
+#logging 
+logging:
+    version: 1
+    formatters:
+        xetra:
+            format: "xetra tramsformation %(asctime)s-%(levelname)s-%(message)s"
+
+    handlers:
+        console:
+            class: logging.StreamHandler
+            formatter: xetra
+            level: DEBUG
+    root:
+        level: DEBUG
+        handlers: [console]
+
+
+
+
+ 

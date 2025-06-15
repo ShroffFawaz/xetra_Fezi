@@ -9,9 +9,12 @@ jupyter = "*"
 boto3 = "*"
 pandas = "*"
 pyarrow = "*"
+pyyaml = "*"
+pylint = "*"
+moto = {extras = ["all"], version = "*"}
+coverage = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.12"
-
