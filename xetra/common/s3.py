@@ -3,7 +3,15 @@ import os
 import logging
 import boto3
 import boto3.session
-
+import pandas as pd
+import boto3
+from io import StringIO,BytesIO
+from datetime import datetime,timedelta  
+from enum import Enum
+from xetra.common.Custom_exceptions import WrongformatExcetion 
+class S3FileType(Enum):
+    CSV='csv'
+    PARQUET='parquet'
 class s3Bucketconncetor():
     """
     classes for interacting with s3
@@ -28,14 +36,38 @@ class s3Bucketconncetor():
 
         :param:perfix on the s3 bucket that should be filterd with
         
-        return:
-          files list all the file names contain the perfix in the key 
+        return:files list all the file names contain the perfix in the key 
         """
-            
         files = [obj.key for obj in self._bucket.objects.filter(Prefix=prefix)]
         return files   
-    def read_to_csv_df(self):
-        pass
-    def write_df_to_s3(self):
-        pass
+    def read_to_csv_df(self, key:str, sep=',', decoding='utf-8'):
+        self._logger.info('Read file %s %s %s',self.endpoint_url,self._bucket_key,key)
+        csv_obj = self._bucket.Object(key=key).get().get('Body').read().decode(decoding)
+        data = StringIO(csv_obj)
+        date_frame = pd.read_csv(data, delimiter=sep)
+        return date_frame
+    
+    
+    def write_df_to_s3(self,data_frame:pd.DataFrame, key:str,file_format:str):
+        """
+        writing a Pandas DataFrame to S3
+        supported formats: .csv, .parquet
+
+        :data_frame: Pandas DataFrame that should be written
+        :key: target key of the saved file
+        :file_format: format of the saved file
+        """
+        if data_frame.empty:
+            self._logger.info('The dataframe is empty! No file will be written!')
+            return None
+        if file_format==S3FileType.CSV.value:
+            out_buffer = StringIO()
+            data_frame.to_csv(out_buffer, index=False)
+            return self._put_object(out_buffer,key)
+        if file_format == S3FileType.PARQUET.value:
+            out_buffer = StringIO()
+            data_frame.to_parquet(out_buffer, index=False)
+            return self._put_object(out_buffer,key)
+        self._logger.info('he file format %s is not supported to be written to s3!',file_format)
+        raise WrongformatExcetion
 
