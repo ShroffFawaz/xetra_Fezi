@@ -70,4 +70,3 @@ class s3Bucketconncetor():
             return self._put_object(out_buffer,key)
         self._logger.info('he file format %s is not supported to be written to s3!',file_format)
         raise WrongformatExcetion
-

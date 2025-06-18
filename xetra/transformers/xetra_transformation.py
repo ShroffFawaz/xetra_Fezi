@@ -20,7 +20,7 @@ class XetraSourceCofig(NamedTuple):
     src_first_extract_date:str
     src_columns:list
     src_col_date:str
-    src_col_isin:str
+    src_col_isin:str  
     src_col_time:str
     src_col_start_price:str
     src_col_min_price:str
@@ -77,5 +77,3 @@ class XetraETL(NamedTuple):
         pass
     def etl_report1(self):
         pass
-        
-

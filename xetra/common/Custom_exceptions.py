@@ -2,3 +2,6 @@
 class WrongformatExcetion():
     """
     """
+class WrongMetaFileException():
+    """
+    """
