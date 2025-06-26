@@ -189,7 +189,7 @@ class TestXetraETLMethod(unittest.TestCase):
         an DataFrame as input argument
         """
         # Expected results
-        log1_exp = 'Xetra target data successfully written.'
+        log1_exp = 'Writing file to'
         log2_exp = 'Xetra meta file successfully updated.'
         df_exp=self.df_report
         meta_exp=['2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
