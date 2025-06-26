@@ -108,12 +108,13 @@ class TestXetraETLMethod(unittest.TestCase):
         columns_report = [
         'ISIN', 'Date', 'opening_price_eur', 'closing_price_eur',
         'MaxPrice_eur', 'MinPrice_eur', 'TradedVolume', 'change_prev_closing_%'
-        ]
+                                                ]
         data_report = [
             ['AT0000A0E9W5', '2021-04-17', 20.21, 18.27, 18.21, 21.34, 1088, 10.62],
             ['AT0000A0E9W5', '2021-04-18', 20.58, 19.27, 18.89, 21.14, 10286, 1.83],
             ['AT0000A0E9W5', '2021-04-19', 23.58, 24.22, 22.21, 25.01, 3586, 14.58],
         ]
+        
         self.df_report=pd.DataFrame(data_report,columns=columns_report)
     def tearDown(self):
         """executing after unittesting"""
@@ -228,7 +229,7 @@ class TestXetraETLMethod(unittest.TestCase):
             }
         )
         #Cleaning after key
-        self.s3_bucket.delete_objects(
+        self.s3_bucket_trg.delete_objects(
             Delete={
                 'Objects':[                
                 {'Key':meta_file}
@@ -255,13 +256,13 @@ class TestXetraETLMethod(unittest.TestCase):
             out_buffer=BytesIO(data)
             df_result=pd.read_parquet(out_buffer)
             #Read the meta file (from S3)
-            meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)
-            df_meta_result=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)[0]
+            meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)[0]
+            df_meta_result=self.s3_bucket_trg.read_to_csv_df(meta_file)
             #Compare the dates in meta file
-            self.assertEqual(df_meta_result,meta_exp)
+            self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
         #Cleaning after key
-        self.s3_bucket.delete_objects(
+        self.s3_bucket_trg.delete_objects(
             Delete={
                 'Objects':[                
                 {'Key':trg_file}
