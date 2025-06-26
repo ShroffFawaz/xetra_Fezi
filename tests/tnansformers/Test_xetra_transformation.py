@@ -106,8 +106,8 @@ class TestXetraETLMethod(unittest.TestCase):
         self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[8:8], '2021-04-19/2021-04-19_BINS_XETR09.csv', 'csv')
 
         columns_report = [
-            'ISIN', 'Date', 'opening_price_eur', 'closing_price_eur',
-            'minimum_price_eur', 'maximum_price_eur', 'daily_traded_volume', 'change_prev_closing_%'
+        'ISIN', 'Date', 'opening_price_eur', 'closing_price_eur',
+        'minimum_price_eur', 'maximum_price_eur', 'daily_traded_volume', 'change_prev_closing_%'
         ]
         data_report = [
             ['AT0000A0E9W5', '2021-04-17', 20.21, 18.27, 18.21, 21.34, 1088, 10.62],
@@ -217,7 +217,7 @@ class TestXetraETLMethod(unittest.TestCase):
             meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)[0]
             df_meta_result=self.s3_bucket_trg.read_to_csv_df(meta_file)
             #Compare the dates in meta file
-            self.assertEqual(list(df_meta_result)['source_date'],meta_exp)
+            self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
         #Cleaning after key
         self.s3_bucket.delete_objects(
@@ -256,7 +256,7 @@ class TestXetraETLMethod(unittest.TestCase):
             df_result=pd.read_parquet(out_buffer)
             #Read the meta file (from S3)
             meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)
-            df_meta_result=self.s3_bucket_trg.read_to_csv_df(meta_file)
+            df_meta_result=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)[0]
             #Compare the dates in meta file
             self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
