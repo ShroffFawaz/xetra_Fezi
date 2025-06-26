@@ -107,7 +107,7 @@ class TestXetraETLMethod(unittest.TestCase):
 
         columns_report = [
         'ISIN', 'Date', 'opening_price_eur', 'closing_price_eur',
-        'minimum_price_eur', 'maximum_price_eur', 'daily_traded_volume', 'change_prev_closing_%'
+        'MaxPrice_eur', 'MinPrice_eur', 'TradedVolume', 'change_prev_closing_%'
         ]
         data_report = [
             ['AT0000A0E9W5', '2021-04-17', 20.21, 18.27, 18.21, 21.34, 1088, 10.62],
@@ -220,7 +220,7 @@ class TestXetraETLMethod(unittest.TestCase):
             self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
         #Cleaning after key
-        self.s3_bucket.delete_objects(
+        self.trg_bucket.delete_objects(
             Delete={
                 'Objects':[                
                 {'Key':trg_file}
@@ -258,7 +258,7 @@ class TestXetraETLMethod(unittest.TestCase):
             meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)
             df_meta_result=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)[0]
             #Compare the dates in meta file
-            self.assertEqual(list(df_meta_result['source_date']),meta_exp)
+            self.assertEqual(df_meta_result,meta_exp)
             #Cleaning after key
         #Cleaning after key
         self.s3_bucket.delete_objects(
