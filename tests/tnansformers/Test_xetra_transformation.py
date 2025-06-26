@@ -123,7 +123,8 @@ class TestXetraETLMethod(unittest.TestCase):
         extract_date='2020-01-02'
         extract_date_list=[]
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
+                               self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
             df_return=xetra_etl.extract()
         self.assertTrue(df_return.empty)
 
@@ -135,7 +136,8 @@ class TestXetraETLMethod(unittest.TestCase):
         extract_date_list = ['2021-04-16', '2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
          # Method execution
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,
+                               self.target_config,extract_date_list,extract_date_list,extract_date)
             df_return=xetra_etl.extract()
             self.assertTrue(df_exp.equals(df_return))
     def test_transform_report1_emptydf(self):
@@ -151,7 +153,8 @@ class TestXetraETLMethod(unittest.TestCase):
         df_input=pd.DataFrame()
          # Method execution
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
+                               self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
             with self.assertLogs as logm:
                 df_result=xetra_etl.transform(df_input)
                 self.assertEqual(log_exp,logm.output[0])
@@ -171,7 +174,8 @@ class TestXetraETLMethod(unittest.TestCase):
         df_input=self.df_src.loc[1:8].reset_index(drop=True)
          # Method execution
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
+                               self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
             with self.assertLogs as logm:
                 df_result=xetra_etl.transform(df_input)
                 self.assertIn(log1_exp,logm.output[0])
@@ -195,7 +199,8 @@ class TestXetraETLMethod(unittest.TestCase):
         df_input=self.df_report
         # Method execution
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
+                               self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
             with self.assertLogs as logm:
                 df_result=xetra_etl.load(df_input)
                 self.assertIn(log1_exp,logm.output[0])
@@ -238,8 +243,9 @@ class TestXetraETLMethod(unittest.TestCase):
         extract_date = '2021-04-17'
         extract_date_list = ['2021-04-16', '2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
         # Method execution
-        with patch.object(Metaprocess,'return_date_list',retun_va=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
+        with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,
+                               self.target_config,extract_date_list,extract_date_list,extract_date)
             xetra_etl.etl_report1()
             trg_file=self.s3_bucket_trg.list_files_in_prefix(self.target_config.trg_key)[0]
             #Reading that file
