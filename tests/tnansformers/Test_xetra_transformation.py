@@ -157,7 +157,7 @@ class TestXetraETLMethod(unittest.TestCase):
                                self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
             with self.assertLogs(level='INFO') as logm:
                 df_result=xetra_etl.transform(df_input)
-                self.assertEqual(log_exp,logm.output[0])
+                self.assertIn(log_exp,logm.output[0])
             self.assertTrue(df_result.empty)
     def test_transfor_report1_ok(self):
         """

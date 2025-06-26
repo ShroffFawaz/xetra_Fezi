@@ -29,11 +29,11 @@ class Metaprocess():
         df_new[Metaprocess.MetaColumns.META_PROCESS_COL.value]=datetime.today().strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)
         # Try Reading Existing Meta File
         try:
-            df_old=s3_bucket_meta.write_df_to_s3(meta_key)
+            df_old=s3_bucket_meta.read_to_csv_df(meta_key)
             if collections.Counter(df_new.columns) != collections.Counter(df_old.columns):
                 raise WrongMetaFileException
             df_all=pd.concat([df_old,df_new])
-        except s3_bucket_meta.session.client('s3').exceptions.Nosuchkey:
+        except s3_bucket_meta.session.client('s3').exceptions.NoSuchKey:
             df_all=df_new
         s3_bucket_meta.write_df_to_s3(df_all,meta_key,Metaprocess.MetaColumns.META_FILE_FORMAT.value)    
 

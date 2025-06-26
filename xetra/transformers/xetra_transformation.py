@@ -99,7 +99,7 @@ class XetraETL:
             return data_frame
         self._logger.info('Applying transformations to Xetra source data for report 1 started...')
         # Filtering necessary source columns
-        data_frame=data_frame.loc[self.srg_args.src_columns]
+        data_frame=data_frame[self.srg_args.src_columns]
         # Removing the missing values
         data_frame.dropna(inplace=True)
         #
