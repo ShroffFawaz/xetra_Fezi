@@ -209,7 +209,7 @@ class TestXetraETLMethod(unittest.TestCase):
             # Test after method execution
             trg_file=self.s3_bucket_trg.list_files_in_prefix(self.target_config.trg_key)[0]
             #Reading that file
-            data=self.s3_bucket_trg.Object(key=trg_file).get().get('Body').read()
+            data=self.trg_bucket.Object(key=trg_file).get().get('Body').read()
             #coverting it into a pandas dataframe
             out_buffer=BytesIO(data)
             df_result=pd.read_parquet(out_buffer)
@@ -250,7 +250,7 @@ class TestXetraETLMethod(unittest.TestCase):
             xetra_etl.etl_report1()
             trg_file=self.s3_bucket_trg.list_files_in_prefix(self.target_config.trg_key)[0]
             #Reading that file
-            data=self.s3_bucket_trg.Object(trg_file).get().get('Body').read()
+            data=self.trg_bucket.Object(trg_file).get().get('Body').read()
             #coverting it into a pandas dataframe
             out_buffer=BytesIO(data)
             df_result=pd.read_parquet(out_buffer)
