@@ -221,21 +221,7 @@ class TestXetraETLMethod(unittest.TestCase):
             self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
         #Cleaning after key
-        self.trg_bucket.delete_objects(
-            Delete={
-                'Objects':[                
-                {'Key':trg_file}
-                ]
-            }
-        )
-        #Cleaning after key
-        self.s3_bucket_trg.delete_objects(
-            Delete={
-                'Objects':[                
-                {'Key':meta_file}
-                ]
-            }
-        )
+        self.trg_bucket.Object(key=meta_file).delete()
     def test_etl_report(self):
         #exceted Results
         # Expected results
@@ -262,13 +248,8 @@ class TestXetraETLMethod(unittest.TestCase):
             self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
         #Cleaning after key
-        self.s3_bucket_trg.delete_objects(
-            Delete={
-                'Objects':[                
-                {'Key':trg_file}
-                ]
-            }
-        )
+        self.trg_bucket.Object(key=trg_file).delete()
+
 
 if __name__=='__main__':
     unittest.main()
