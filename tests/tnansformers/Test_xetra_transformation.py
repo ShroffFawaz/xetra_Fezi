@@ -166,7 +166,7 @@ class TestXetraETLMethod(unittest.TestCase):
         """
         # Expected results
         log1_exp = 'Applying transformations to Xetra source data for report 1 started...'
-        log2_exp = 'Applying transformations to Xetra source data finished...'
+        log2_exp = 'Transformation for report 1 finished.'
         df_exp=self.df_report
         #test init
         extract_date = '2021-04-17'

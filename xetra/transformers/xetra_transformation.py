@@ -130,7 +130,7 @@ class XetraETL:
         self.s3_bucket_trg.write_df_to_s3(data_frame,target_key,self.trg_args.trg_format)
         self._logger.info('Xetra target data successfully written.')
         #update the meta file
-        Metaprocess.meta_file_update(self.meta_update_list,self.meta_key,self.s3_bucket_trg)
+        Metaprocess.meta_file_update(self.meta_key,self.meta_update_list,self.s3_bucket_trg)
         self._logger.info('Xetra meta file successfully updated.')
         return True
 
