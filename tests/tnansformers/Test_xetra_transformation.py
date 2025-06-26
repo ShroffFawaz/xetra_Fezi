@@ -109,11 +109,13 @@ class TestXetraETLMethod(unittest.TestCase):
         'ISIN', 'Date', 'opening_price_eur', 'closing_price_eur',
         'MaxPrice_eur', 'MinPrice_eur', 'TradedVolume', 'change_prev_closing_%'
                                                 ]
+
         data_report = [
-            ['AT0000A0E9W5', '2021-04-17', 20.21, 18.27, 18.21, 21.34, 1088, 10.62],
-            ['AT0000A0E9W5', '2021-04-18', 20.58, 19.27, 18.89, 21.14, 10286, 1.83],
-            ['AT0000A0E9W5', '2021-04-19', 23.58, 24.22, 22.21, 25.01, 3586, 14.58],
+        ['AT0000A0E9W5', '2021-04-17', 20.21, 21.19, 20.58, 18.21, 1088, -0.70],
+        ['AT0000A0E9W5', '2021-04-18', 20.58, 21.14, 21.14, 18.89, 10286, -0.24],
+        ['AT0000A0E9W5', '2021-04-19', 23.58, 22.21, 25.01, 22.21, 3586, 5.06],
         ]
+
         
         self.df_report=pd.DataFrame(data_report,columns=columns_report)
     def tearDown(self):
