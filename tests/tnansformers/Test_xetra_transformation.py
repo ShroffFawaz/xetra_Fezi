@@ -1,16 +1,17 @@
 import os 
 import unittest
-from moto import mock_aws
-import boto3 
-import pandas as pd
-from io import BytesIO,StringIO
 from unittest.mock import patch
+import boto3 
+
+import pandas as pd
+from moto import mock_aws
+from io import BytesIO,StringIO
+
 from xetra.common.s3 import s3Bucketconncetor
-from xetra.transformers.xetra_transformation import XetraSourceCofig
-from xetra.transformers.xetra_transformation import XetraTargetConfig
+from xetra.transformers.xetra_transformation import XetraSourceCofig,XetraTargetConfig
 from xetra.common.meta_process import Metaprocess
 from xetra.transformers.xetra_transformation import XetraETL
-from xetra.common.s3 import s3Bucketconncetor
+
 
 class TestXetraETLMethod(unittest.TestCase):
     def setUp(self):
@@ -23,8 +24,9 @@ class TestXetraETLMethod(unittest.TestCase):
         self.s3_access_key="AWS_ACCESS_KEY_ID"
         self.s3_secret_key="AWS_SECRET_ACCESS_KEY"
         self.s3_endpoint_url='https://s3.eu-central-1.amazonaws.com'
-        self.s3_bucket_name="test-bucket"
-
+        self.s3_bucket_name_src='src_bucket'
+        self.s3_bucket_name_trg='trg_bucket'
+        self.meta_key='meta_key'
         #creating s3 access keys as environment variables
         os.environ[self.s3_access_key]="KEY1"
         os.environ[self.s3_secret_key]="KEY2"
@@ -32,16 +34,24 @@ class TestXetraETLMethod(unittest.TestCase):
         #creating a bucket on the mocked s3
         self.s3=boto3.resource(service_name='s3',
                                endpoint_url=self.s3_endpoint_url)
-        self.s3.create_bucket(Bucket=self.s3_bucket_name,
+        self.s3.create_bucket(Bucket=self.s3_bucket_name_src,
                               CreateBucketConfiguration={'LocationConstraint':'eu-central-1'
                               })
-        self.s3_bucket=self.s3.Bucket(self.s3_bucket_name)
+        self.s3.create_bucket(Bucket=self.s3_bucket_name_trg,
+                              CreateBucketConfiguration={'LocationConstraint':'eu-central-1'
+                              })
+        self.scr_bucket=self.s3.Bucket(self.s3_bucket_name_src)
+        self.trg_bucket=self.s3.Bucket(self.s3_bucket_name_trg)
 
-        #creating a test instance 
-        self.s3_bucket_meta=s3Bucketconncetor(self.s3_access_key,
+        #creating a test instance
+        self.s3_bucket_scr=s3Bucketconncetor(self.s3_access_key,
                                               self.s3_secret_key,
                                               self.s3_endpoint_url,
-                                              self.s3_bucket_name)
+                                              self.s3_bucket_name_src)
+        self.s3_bucket_trg=s3Bucketconncetor(self.s3_access_key,
+                                              self.s3_secret_key,
+                                              self.s3_endpoint_url,
+                                              self.s3_bucket_name_trg)
         conf_dict_src = {
             'src_first_extract_date': '2021-04-01',
             'src_columns': ['ISIN', 'Mnemonic', 'Date', 'Time', 'StartPrice', 'EndPrice', 'MinPrice', 'MaxPrice', 'TradedVolume'],
@@ -67,10 +77,10 @@ class TestXetraETLMethod(unittest.TestCase):
             'trg_key_date_format': '%Y%m%d_%H%M%S',
             'trg_format': 'parquet'
         }
-        self.conf_dict_src=XetraSourceCofig(**conf_dict_src)
-        self.conf_dict_trg =XetraTargetConfig(**conf_dict_trg)
+        self.source_config=XetraSourceCofig(**conf_dict_src)
+        self.target_config =XetraTargetConfig(**conf_dict_trg)
         #creating Mock Row source Data
-        columns_src=conf_dict_src['src_columns']
+        columns_src=['ISIN', 'Mnemonic', 'Date', 'Time', 'StartPrice', 'EndPrice', 'MinPrice', 'MaxPrice', 'TradedVolume']
         data=[
              ['AT0000A0E9W5', 'SANT', '2021-04-15', '12:00', 20.19, 18.45, 18.20, 20.33, 877],
             ['AT0000A0E9W5', 'SANT', '2021-04-16', '15:00', 18.27, 21.34, 18.27, 21.34, 987],
@@ -82,19 +92,18 @@ class TestXetraETLMethod(unittest.TestCase):
             ['AT0000A0E9W5', 'SANT', '2021-04-19', '08:00', 23.58, 24.22, 23.31, 24.34, 1028],
             ['AT0000A0E9W5', 'SANT', '2021-04-19', '09:00', 24.22, 22.21, 22.21, 25.01, 1523],
         ]
-        self.df_scr=pd.DataFrame(data,columns=columns_src)
         #upload date to Mock s3
-        self.df_src = pd.DataFrame(data, columns=columns_src)
+        self.df_src=pd.DataFrame(data,columns=columns_src)
 
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[0:0], '2021-04-15/2021-04-15_BINS_XETR12.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[1:1], '2021-04-16/2021-04-16_BINS_XETR14.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[2:2], '2021-04-17/2021-04-17_BINS_XETR13.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[3:3], '2021-04-17/2021-04-17_BINS_XETR14.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[4:4], '2021-04-18/2021-04-18_BINS_XETR07.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[5:5], '2021-04-18/2021-04-18_BINS_XETR08.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[6:6], '2021-04-19/2021-04-19_BINS_XETR07.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[7:7], '2021-04-19/2021-04-19_BINS_XETR08.csv', 'csv')
-        self.s3_bucket_src.write_df_to_s3(self.df_src.loc[8:8], '2021-04-19/2021-04-19_BINS_XETR09.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[0:0], '2021-04-15/2021-04-15_BINS_XETR12.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[1:1], '2021-04-16/2021-04-16_BINS_XETR14.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[2:2], '2021-04-17/2021-04-17_BINS_XETR13.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[3:3], '2021-04-17/2021-04-17_BINS_XETR14.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[4:4], '2021-04-18/2021-04-18_BINS_XETR07.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[5:5], '2021-04-18/2021-04-18_BINS_XETR08.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[6:6], '2021-04-19/2021-04-19_BINS_XETR07.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[7:7], '2021-04-19/2021-04-19_BINS_XETR08.csv', 'csv')
+        self.s3_bucket_scr.write_df_to_s3(self.df_src.loc[8:8], '2021-04-19/2021-04-19_BINS_XETR09.csv', 'csv')
 
         columns_report = [
             'ISIN', 'Date', 'opening_price_eur', 'closing_price_eur',
@@ -114,13 +123,7 @@ class TestXetraETLMethod(unittest.TestCase):
         extract_date='2020-01-02'
         extract_date_list=[]
         with patch.object(Metaprocess,'retrun_date_list',retur_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(s3_bucket_src=self.s3_bucket_src,s3_bucket_trg=self.s3_bucket_trg,
-                                    meta_key=self.meta_key,
-                                    srg_args=self.source_config,
-                                    trg_args=self.target_config,
-                                    meta_update_list=[],
-                                    extract_date_list=extract_date_list,
-                                    extract_date=extract_date)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
             df_return=xetra_etl.extract()
         self.assertTrue(df_return.empty)
 
@@ -132,13 +135,7 @@ class TestXetraETLMethod(unittest.TestCase):
         extract_date_list = ['2021-04-16', '2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
          # Method execution
         with patch.object(Metaprocess,'retrun_date_list',retur_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(s3_bucket_src=self.s3_bucket_src,s3_bucket_trg=self.s3_bucket_trg,
-                                    meta_key=self.meta_key,
-                                    srg_args=self.source_config,
-                                    trg_args=self.target_config,
-                                    meta_update_list=[],
-                                    extract_date_list=extract_date_list,
-                                    extract_date=extract_date)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
             df_return=xetra_etl.extract()
             self.assertTrue(df_exp.equals(df_return))
     def test_transform_report1_emptydf(self):
@@ -154,13 +151,7 @@ class TestXetraETLMethod(unittest.TestCase):
         df_input=pd.DataFrame()
          # Method execution
         with patch.object(Metaprocess,'retrun_date_list',retur_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(s3_bucket_src=self.s3_bucket_src,s3_bucket_trg=self.s3_bucket_trg,
-                                    meta_key=self.meta_key,
-                                    srg_args=self.source_config,
-                                    trg_args=self.target_config,
-                                    meta_update_list=[],
-                                    extract_date_list=extract_date_list,
-                                    extract_date=extract_date)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
             with self.assertLogs as logm:
                 df_result=xetra_etl.transform(df_input)
                 self.assertEqual(log_exp,logm.output[0])
@@ -180,13 +171,7 @@ class TestXetraETLMethod(unittest.TestCase):
         df_input=self.df_scr.loc[1:8].reset_index(drop=True)
          # Method execution
         with patch.object(Metaprocess,'retrun_date_list',retur_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(s3_bucket_src=self.s3_bucket_src,s3_bucket_trg=self.s3_bucket_trg,
-                                    meta_key=self.meta_key,
-                                    srg_args=self.source_config,
-                                    trg_args=self.target_config,
-                                    meta_update_list=[],
-                                    extract_date_list=extract_date_list,
-                                    extract_date=extract_date)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
             with self.assertLogs as logm:
                 df_result=xetra_etl.transform(df_input)
                 self.assertIn(log1_exp,logm.output[0])
@@ -210,13 +195,7 @@ class TestXetraETLMethod(unittest.TestCase):
         df_input=self.df_report
         # Method execution
         with patch.object(Metaprocess,'retrun_date_list',retur_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(s3_bucket_src=self.s3_bucket_src,s3_bucket_trg=self.s3_bucket_trg,
-                                    meta_key=self.meta_key,
-                                    srg_args=self.source_config,
-                                    trg_args=self.target_config,
-                                    meta_update_list=[],
-                                    extract_date_list=extract_date_list,
-                                    extract_date=extract_date)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
             with self.assertLogs as logm:
                 df_result=xetra_etl.load(df_input)
                 self.assertIn(log1_exp,logm.output[0])
@@ -260,13 +239,7 @@ class TestXetraETLMethod(unittest.TestCase):
         extract_date_list = ['2021-04-16', '2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
         # Method execution
         with patch.object(Metaprocess,'retrun_date_list',retur_value=[extract_date,extract_date_list]):
-            xetra_etl=XetraETL(s3_bucket_src=self.s3_bucket_src,s3_bucket_trg=self.s3_bucket_trg,
-                                    meta_key=self.meta_key,
-                                    srg_args=self.source_config,
-                                    trg_args=self.target_config,
-                                    meta_update_list=[],
-                                    extract_date_list=extract_date_list,
-                                    extract_date=extract_date)
+            xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
             xetra_etl.etl_report1()
             trg_file=self.s3_bucket_trg.list_files_in_prefix(self.target_config.trg_key)[0]
             #Reading that file
