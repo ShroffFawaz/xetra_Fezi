@@ -61,7 +61,7 @@ class XetraTargetConfig(NamedTuple):
     trg_key_date_format:str
 
     trg_format:str
-class XetraETL(NamedTuple):
+class XetraETL:
     def __init__(self,s3_bucket_src:s3Bucketconncetor
                  ,s3_bucket_trg:s3Bucketconncetor,meta_key:str,
                  srg_args:XetraSourceCofig,trg_args:XetraTargetConfig,meta_update_list,extract_date_list,extract_date):
