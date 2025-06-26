@@ -155,7 +155,7 @@ class TestXetraETLMethod(unittest.TestCase):
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
             xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
                                self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
-            with self.assertLogs as logm:
+            with self.assertLogs(level='INFO') as logm:
                 df_result=xetra_etl.transform(df_input)
                 self.assertEqual(log_exp,logm.output[0])
             self.assertTrue(df_result.empty)
@@ -176,7 +176,7 @@ class TestXetraETLMethod(unittest.TestCase):
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
             xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
                                self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
-            with self.assertLogs as logm:
+            with self.assertLogs(level='INFO') as logm:
                 df_result=xetra_etl.transform(df_input)
                 self.assertIn(log1_exp,logm.output[0])
                 self.assertIn(log2_exp,logm.output[1])
@@ -201,7 +201,7 @@ class TestXetraETLMethod(unittest.TestCase):
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
             xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,
                                self.source_config,self.target_config,extract_date_list,extract_date_list,extract_date)
-            with self.assertLogs as logm:
+            with self.assertLogs(level='INFO') as logm:
                 df_result=xetra_etl.load(df_input)
                 self.assertIn(log1_exp,logm.output[0])
                 self.assertIn(log2_exp,logm.output[4])

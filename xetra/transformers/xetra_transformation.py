@@ -136,8 +136,8 @@ class XetraETL:
 
     def etl_report1(self):
         #Extraction
-        data_frame=self.load()
+        data_frame=self.extract()
         #Transforming
-        data_frame=self.transform(data_frame)
+        data_frame =self.transform(data_frame)
         #Loading
         data_frame=self.load(data_frame)
