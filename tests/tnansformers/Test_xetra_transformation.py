@@ -9,7 +9,7 @@ from xetra.common.s3 import s3Bucketconncetor
 from xetra.transformers.xetra_transformation import XetraSourceCofig
 from xetra.common.meta_process import Metaprocess
 from xetra.transformers.xetra_transformation import XetraETL
-from xetra.common.meta_process import list_files_in_prefix
+from xetra.common.s3 import s3Bucketconncetor
 
 class TestXetraETLMethod(unittest.TestCase):
     def setUp(self):
