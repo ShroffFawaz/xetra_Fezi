@@ -66,7 +66,7 @@ class s3Bucketconncetor():
             data_frame.to_csv(out_buffer, index=False)
             return self._put_object(out_buffer,key)
         if file_format == S3FileType.PARQUET.value:
-            out_buffer = StringIO()
+            out_buffer = BytesIO()
             data_frame.to_parquet(out_buffer, index=False)
             return self._put_object(out_buffer,key)
         self._logger.info('he file format %s is not supported to be written to s3!',file_format)

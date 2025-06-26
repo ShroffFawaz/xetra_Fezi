@@ -94,12 +94,12 @@ class XetraETL:
         :returns:
         data_frame: Transformed Pandas DataFrame as Output
         """
-        if data_frame.empty():
+        if data_frame.empty:
             self._logger.info('The dataframe is empty. No transformations will be applied.')
             return data_frame
         self._logger.info('Applying transformations to Xetra source data for report 1 started...')
         # Filtering necessary source columns
-        data_frame=data_frame.loc[:self.srg_args.src_columns]
+        data_frame=data_frame.loc[self.srg_args.src_columns]
         # Removing the missing values
         data_frame.dropna(inplace=True)
         #
@@ -127,7 +127,7 @@ class XetraETL:
             f'{self.trg_args.trg_format}'
         )
         #Savingh the dataframe to s3
-        self.s3_bucket_src.write_df_to_s3(data_frame,target_key,self.trg_args.trg_format)
+        self.s3_bucket_trg.write_df_to_s3(data_frame,target_key,self.trg_args.trg_format)
         self._logger.info('Xetra target data successfully written.')
         #update the meta file
         Metaprocess.meta_file_update(self.meta_update_list,self.meta_key,self.s3_bucket_trg)
