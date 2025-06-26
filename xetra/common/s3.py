@@ -6,6 +6,7 @@ import boto3.session
 import pandas as pd
 import boto3
 from io import StringIO,BytesIO
+from typing import Union
 from datetime import datetime,timedelta  
 from enum import Enum
 from xetra.common.Custom_exceptions import WrongformatExcetion 
@@ -70,3 +71,13 @@ class s3Bucketconncetor():
             return self._put_object(out_buffer,key)
         self._logger.info('he file format %s is not supported to be written to s3!',file_format)
         raise WrongformatExcetion
+    def _put_object(self, out_buffer:Union[StringIO ,BytesIO], key:str):
+        """
+        Helper function for self.write_df_to_s3()
+        :out_buffer: StringIO | BytesIO that should be written
+        :key: target key of the saved file
+        """
+        self._logger.info('Writing file to %s/%s/%s', self.endpoint_url, self._bucket.name, key)
+        self._bucket.put_object(Body=out_buffer.getvalue(), Key=key)
+        return True
+
