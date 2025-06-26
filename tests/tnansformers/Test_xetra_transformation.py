@@ -7,6 +7,7 @@ from io import BytesIO,StringIO
 from unittest.mock import patch
 from xetra.common.s3 import s3Bucketconncetor
 from xetra.transformers.xetra_transformation import XetraSourceCofig
+from xetra.transformers.xetra_transformation import XetraTargetConfig
 from xetra.common.meta_process import Metaprocess
 from xetra.transformers.xetra_transformation import XetraETL
 from xetra.common.s3 import s3Bucketconncetor
@@ -67,7 +68,7 @@ class TestXetraETLMethod(unittest.TestCase):
             'trg_format': 'parquet'
         }
         self.conf_dict_src=XetraSourceCofig(**conf_dict_src)
-        self.conf_dict_trg =XetraSourceCofig(**conf_dict_trg)
+        self.conf_dict_trg =XetraTargetConfig(**conf_dict_trg)
         #creating Mock Row source Data
         columns_src=conf_dict_src['src_columns']
         data=[
