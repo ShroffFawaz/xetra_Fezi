@@ -38,7 +38,7 @@ class Metaprocess():
         s3_bucket_meta.write_df_to_s3(df_all,meta_key,Metaprocess.MetaColumns.META_FILE_FORMAT.value)    
 
     @staticmethod
-    def retrun_date_list(first_date:str,meta_key:str,s3_bucket_meta:s3Bucketconncetor):
+    def return_date_list(first_date:str,meta_key:str,s3_bucket_meta:s3Bucketconncetor):
         
         min_date = datetime.strptime(first_date, Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value).date() - timedelta(days=1)
         today=datetime.today().date()

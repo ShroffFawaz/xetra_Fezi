@@ -129,7 +129,7 @@ class TestXetraETLMethod(unittest.TestCase):
 
     def test_extract_files(self):
         #expected results
-        df_exp=self.df_scr.loc[1:8].reset_index(drop=True)
+        df_exp=self.df_src.loc[1:8].reset_index(drop=True)
         # Test init
         extract_date = '2021-04-17'
         extract_date_list = ['2021-04-16', '2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
@@ -168,7 +168,7 @@ class TestXetraETLMethod(unittest.TestCase):
         #test init
         extract_date = '2021-04-17'
         extract_date_list = ['2021-04-16', '2021-04-17', '2021-04-18', '2021-04-19', '2021-04-20']
-        df_input=self.df_scr.loc[1:8].reset_index(drop=True)
+        df_input=self.df_src.loc[1:8].reset_index(drop=True)
          # Method execution
         with patch.object(Metaprocess,'return_date_list',return_value=[extract_date,extract_date_list]):
             xetra_etl=XetraETL(self.s3_bucket_scr,self.s3_bucket_trg,self.meta_key,self.source_config,self.target_config)
