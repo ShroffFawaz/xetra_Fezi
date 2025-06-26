@@ -181,7 +181,8 @@ class TestXetraETLMethod(unittest.TestCase):
                 self.assertIn(log1_exp,logm.output[0])
                 self.assertIn(log2_exp,logm.output[1])
          # Test after method execution       
-            self.assertTrue(df_exp.equals(df_result))
+            pd.testing.assert_frame_equal(df_result.sort_index(axis=1), df_exp.sort_index(axis=1))
+
 
     def test_load(self):
         """
@@ -208,7 +209,7 @@ class TestXetraETLMethod(unittest.TestCase):
             # Test after method execution
             trg_file=self.s3_bucket_trg.list_files_in_prefix(self.target_config.trg_key)[0]
             #Reading that file
-            data=self.s3_bucket_trg.object(key=trg_file).get().get('Body').read()
+            data=self.s3_bucket_trg.Object(key=trg_file).get().get('Body').read()
             #coverting it into a pandas dataframe
             out_buffer=BytesIO(data)
             df_result=pd.read_parquet(out_buffer)
@@ -249,15 +250,15 @@ class TestXetraETLMethod(unittest.TestCase):
             xetra_etl.etl_report1()
             trg_file=self.s3_bucket_trg.list_files_in_prefix(self.target_config.trg_key)[0]
             #Reading that file
-            data=self.s3_bucket_trg.object(key=trg_file).get().get('Body').read()
+            data=self.s3_bucket_trg.Object(trg_file).get().get('Body').read()
             #coverting it into a pandas dataframe
             out_buffer=BytesIO(data)
             df_result=pd.read_parquet(out_buffer)
             #Read the meta file (from S3)
-            meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)[0]
+            meta_file=self.s3_bucket_trg.list_files_in_prefix(self.meta_key)
             df_meta_result=self.s3_bucket_trg.read_to_csv_df(meta_file)
             #Compare the dates in meta file
-            self.assertEqual(list(df_meta_result)['source_date'],meta_exp)
+            self.assertEqual(list(df_meta_result['source_date']),meta_exp)
             #Cleaning after key
         #Cleaning after key
         self.s3_bucket.delete_objects(
