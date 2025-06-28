@@ -5,7 +5,7 @@ from moto import mock_aws
 from xetra.common.s3 import s3Bucketconncetor
 import pandas as pd
 from io import StringIO,BytesIO
-from xetra.common.s3 import WrongformatExcetion
+from xetra.common.Custom_exceptions import WrongformatExcetion
 
 
 class TestS3BucketConnectorMethod(unittest.TestCase):
@@ -53,9 +53,9 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         col2_exp='col2'
         val1_exp='val1'
         val2_exp='val2'
-        log_exp=f'Reading file{self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
+        log_exp=f'INFO:xetra.common.s3:Read file {self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
         #exact & Uploading the test csv file
-        csv_content=f'{col1_exp},{col2_exp}/n{val1_exp},{val2_exp}'
+        csv_content=f'{col1_exp},{col2_exp}\n{val1_exp},{val2_exp}'
         self.s3_bucket.put_object(Body=csv_content,Key=key_exp)
         #call the method  & capture logs
         with self.assertLogs() as logm:
@@ -64,8 +64,8 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         #Check the DataFrame's Shape and Values
         self.assertEqual(df_result.shape[0],1)
         self.assertEqual(df_result.shape[1],2)
-        self.assertEqual(val1_exp,df_result[val1_exp][0])
-        self.assertDictEqual(val2_exp,df_result[val2_exp][0])
+        self.assertEqual(val1_exp,df_result[col1_exp][0])
+        self.assertEqual(val2_exp,df_result[col2_exp][0])
         self.s3_bucket.delete_objects(
             Delete={
                 'Objects':[                
@@ -89,12 +89,12 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         return_exp=True
         df_exp=pd.DataFrame([['A','B'],['C','D']],columns=['col1','col2'])
         key_exp='key.csv'
-        log_exp=f'Reading file{self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
+        log_exp=f'Writing file to {self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
         file_format='csv'
         with self.assertLogs() as logm:
             result=self.s3_bucket_conn.write_df_to_s3(df_exp,key_exp,file_format)
             self.assertIn(log_exp,logm.output[0])
-        data = self.bucket.Object(key=key_exp).get().get('Body').read().decode('utf-8')
+        data = self.s3_bucket.Object(key=key_exp).get().get('Body').read().decode('utf-8')
         out_buffer= StringIO(data)
         df_result = pd.read_csv(out_buffer)
         self.assertEqual(return_exp,result)
@@ -105,13 +105,13 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         return_exp=True
         df_exp=pd.DataFrame([['A','B'],['C','D']],columns=['col1','col2'])
         key_exp='key.parquet'
-        log_exp=f'Reading file{self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
+        log_exp=f'Writing file to {self.s3_endpoint_url}/{self.s3_bucket_name}/{key_exp}'
         file_format='parquet'
         with self.assertLogs() as logm:
             result=self.s3_bucket_conn.write_df_to_s3(df_exp,key_exp,file_format)
             self.assertIn(log_exp,logm.output[0])
-        data = self.bucket.Object(key=key_exp).get().get('Body').read().decode('utf-8')
-        out_buffer= StringIO(data)
+        data = self.s3_bucket.Object(key=key_exp).get().get('Body').read().decode('utf-8')
+        out_buffer= BytesIO(data)
         df_result = pd.read_parquet(out_buffer)
         self.assertEqual(return_exp,result)
         self.assertTrue(df_exp.equals(df_result))

@@ -36,7 +36,7 @@ class Metaprocess():
         except s3_bucket_meta.session.client('s3').exceptions.NoSuchKey:
             df_all=df_new
         s3_bucket_meta.write_df_to_s3(df_all,meta_key,Metaprocess.MetaColumns.META_FILE_FORMAT.value)    
-
+        return True
     @staticmethod
     def return_date_list(first_date:str,meta_key:str,s3_bucket_meta:s3Bucketconncetor):
         
@@ -54,7 +54,7 @@ class Metaprocess():
             else:
                return_dates=[]
             return_min_dates=datetime(2200,1,1).date()
-        except s3_bucket_meta.session.client('s3').execptions.NoSuchKey:
+        except s3_bucket_meta.session.client('s3').exceptions.NoSuchKey:
             return_dates = [(min_date + timedelta(days=x)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value) for x in range(0, (today-min_date).days + 1)]
             return_min_date = first_date
         return return_min_dates,return_dates

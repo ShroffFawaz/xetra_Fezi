@@ -170,9 +170,9 @@ class TestMetaProcessMethod(unittest.TestCase):
             (datetime.today().date()-timedelta(days=7)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)
         ]
         date_list_exp=[
-            [datetime.today().date()-timedelta(days=day).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(3)],
-            [datetime.today().date()-timedelta(days=day).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(4)],
-            [datetime.today().date()-timedelta(days=day).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(9)]
+            [(datetime.today().date()-timedelta(days=day)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(3)],
+            [(datetime.today().date()-timedelta(days=day)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(4)],
+            [(datetime.today().date()-timedelta(days=day)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(9)]
         ]
         meta_key='meta.csv'
         meta_content=(
@@ -201,7 +201,7 @@ class TestMetaProcessMethod(unittest.TestCase):
                 f'{self.dates[3]},{self.dates[0]}\n'
                 f'{self.dates[4]},{self.dates[0]}'
             )
-            self.s3_bucket_meta.s3_bucket.put_object(Body=meta_content,key=meta_key)
+            self.s3_bucket.put_object(Body=meta_content,key=meta_key)
             first_date=self.dates[1]
             with self.assertRaises(KeyError):
                 Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
@@ -224,7 +224,7 @@ class TestMetaProcessMethod(unittest.TestCase):
                 f'{self.dates[0]},{self.dates[0]}\n'
                 f'{self.dates[1]},{self.dates[0]}\n'
             )
-            self.s3_bucket_meta.put_object(Body=meta_content,Key=meta_key)
+            self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
             first_date=self.dates[0]
             #method execution
             min_date_retrun,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
