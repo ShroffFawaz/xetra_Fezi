@@ -53,7 +53,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         #method execution
         Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
         #Read meta file
-        data = self.bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
+        data = self.s3_bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
         out_buffer= StringIO(data)
         df_meta_result = pd.read_csv(out_buffer)
         date_list_rest=list(df_meta_result[Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value])
@@ -78,7 +78,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         meta_key='meta.csv'
         #method excutions
         with self.assertLogs() as logm:
-            result=Metaprocess.meta_file_update(date_list,meta_key,self.s3_bucket_meta)
+            result=Metaprocess.meta_file_update(meta_key,date_list,self.s3_bucket_meta)
             self.assertIn(log_exp,logm.output[1])
         self.assertEqual(log_exp,result)
     def test_update_meta_file_meta_file_ok(self):
@@ -97,7 +97,7 @@ class TestMetaProcessMethod(unittest.TestCase):
             f'{date_list_new[1]}'
             f'{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
         )
-        self.s3_bucket.put_object(Body=meta_content,key=meta_key)
+        self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
         Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         #Read mete file
@@ -132,7 +132,7 @@ class TestMetaProcessMethod(unittest.TestCase):
             f'{date_list_new[1]}'
             f'{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
         )
-        self.s3_bucket.put_object(Body=meta_content,key=meta_key)
+        self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
         Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         with self.assertRaises(WrongMetaFileException):
@@ -155,15 +155,15 @@ class TestMetaProcessMethod(unittest.TestCase):
         first_date=min_date_exp
         meta_key='meta.csv'
         #Method execution
-        min_date_return,date_list_retrun=Metaprocess.retrun_date_list(first_date,meta_key,self.s3_bucket_meta)
+        min_date_return,date_list_retrun=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
         #Test after method execution
         self.assertEqual(set(date_list_exp),set(date_list_retrun))
         self.assertEqual(min_date_exp,min_date_return)
     def test_return_date_list_meta_file_ok(self):
         min_date_exp=[
-            datetime.today().date()-timedelta(days=1).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value),
-            datetime.today().date()-timedelta(days=2).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value),
-            datetime.today().date()-timedelta(days=7).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)
+            (datetime.today().date()-timedelta(days=1).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)),
+            (datetime.today().date()-timedelta(days=2).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)),
+            (datetime.today().date()-timedelta(days=7).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value))
         ]
         date_list_exp=[
             [datetime.today().date()-timedelta(days=day).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(3)],
