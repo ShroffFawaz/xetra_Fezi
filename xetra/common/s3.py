@@ -51,7 +51,7 @@ class s3Bucketconncetor():
     
     def write_df_to_s3(self,data_frame:pd.DataFrame, key:str,file_format:str):
         """
-        writing a Pandas DataFrame to S3
+        writing a Pandas DataFrame to S3    
         supported formats: .csv, .parquet
 
         :data_frame: Pandas DataFrame that should be written
