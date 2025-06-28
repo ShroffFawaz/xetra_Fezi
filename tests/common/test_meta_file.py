@@ -51,7 +51,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         #test init
         meta_key='meta.csv'
         #method execution
-        Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
+        Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
         #Read meta file
         data = self.s3_bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
         out_buffer= StringIO(data)
@@ -72,13 +72,13 @@ class TestMetaProcessMethod(unittest.TestCase):
     def test_update_meta_file_empty_data_list(self):
         #expected results
         retrun_exp=True
-        log_exp='The dataframe is empty! no file will be written'
+        log_exp=    'The dataframe is empty! No file will be written!'
         # test init
         date_list=[]
         meta_key='meta.csv'
         #method excutions
         with self.assertLogs() as logm:
-            result=Metaprocess.meta_file_update(date_list,meta_key,self.s3_bucket_meta)
+            result=Metaprocess.meta_file_update(meta_key,date_list,self.s3_bucket_meta)
             self.assertIn(log_exp,logm.output[1])
         self.assertEqual(log_exp,result)
 
@@ -97,8 +97,8 @@ class TestMetaProcessMethod(unittest.TestCase):
             f'{date_list_new[1]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
         )
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
-        #Method execuation 
-        Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
+        #Method execuation test_update_meta_file_meta_file_ok
+        Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
         #Read mete file
         data = self.s3_bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
         out_buffer= StringIO(data)
@@ -134,7 +134,7 @@ class TestMetaProcessMethod(unittest.TestCase):
 
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
-        Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
+        Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
         with self.assertRaises(WrongMetaFileException):
             Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         #Cleaning after key
@@ -181,7 +181,7 @@ class TestMetaProcessMethod(unittest.TestCase):
             f'{self.dates[3]},{self.dates[0]}\n'
             f'{self.dates[4]},{self.dates[0]}'
         )
-        self.s3_bucket.put_object(Body=meta_content,key=meta_key)
+        self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         first_date_list=[self.dates[1],self.dates[4],self.dates[7]]
         for count,first_date in enumerate(first_date_list):
             min_date_return,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
@@ -201,7 +201,7 @@ class TestMetaProcessMethod(unittest.TestCase):
                 f'{self.dates[3]},{self.dates[0]}\n'
                 f'{self.dates[4]},{self.dates[0]}'
             )
-            self.s3_bucket.put_object(Body=meta_content,key=meta_key)
+            self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
             first_date=self.dates[1]
             with self.assertRaises(KeyError):
                 Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)

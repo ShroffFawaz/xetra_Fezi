@@ -110,7 +110,7 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         with self.assertLogs() as logm:
             result=self.s3_bucket_conn.write_df_to_s3(df_exp,key_exp,file_format)
             self.assertIn(log_exp,logm.output[0])
-        data = self.s3_bucket.Object(key=key_exp).get().get('Body').read().decode('utf-8')
+        data = self.s3.Object(key=key_exp).get().get('Body').read()
         out_buffer= BytesIO(data)
         df_result = pd.read_parquet(out_buffer)
         self.assertEqual(return_exp,result)
@@ -121,11 +121,13 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         key_exp='test.parquet'
         format_exp='wrong_format'
         log_exp=f'The file format {format_exp} is not supported to be written to s3!'
-        exceptions_exp=WrongformatExcetion
+
         with self.assertLogs() as logm:
             with self.assertRaises(WrongformatExcetion):
                 self.s3_bucket_conn.write_df_to_s3(df_exp,key_exp,format_exp)
             self.assertIn(log_exp,logm.output[0])
+
+            
         
     def test_list_files_in_prefix_wrong_prefix(self):
         """

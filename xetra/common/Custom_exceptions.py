@@ -6,6 +6,6 @@ class WrongformatExcetion():
     pass
 class WrongMetaFileException():
     """
-    Raised when the meta file format is incorrect
+    Raised when the meta file has the wrong structure
     """
     pass

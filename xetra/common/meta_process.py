@@ -17,7 +17,7 @@ class Metaprocess():
     class MetaColumns(Enum):
             META_SOURCE_DATE_COL='source_date'
             META_PROCESS_COL='process_col'
-            META_PROCESS_DATE_FORMAT='%y-%m-%d'
+            META_PROCESS_DATE_FORMAT='%Y-%m-%d'
             META_FILE_FORMAT='csv'
 
     @staticmethod
@@ -26,7 +26,7 @@ class Metaprocess():
         df_new=pd.DataFrame(columns=[Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value,Metaprocess.MetaColumns.META_PROCESS_COL.value])
         #Fill New DataFrame with Current Info
         df_new[Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value]=extract_date_list
-        df_new[Metaprocess.MetaColumns.META_PROCESS_COL.value]=datetime.today().strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)
+        df_new[Metaprocess.MetaColumns.META_PROCESS_COL.value]=datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)
         # Try Reading Existing Meta File
         try:
             df_old=s3_bucket_meta.read_to_csv_df(meta_key)
@@ -45,7 +45,10 @@ class Metaprocess():
         try:
             df_meta=s3_bucket_meta.read_to_csv_df( meta_key)
             dates = [(min_date + timedelta(days=x)) for x in range (0,(today-min_date).days+1 )]
-            scr_date=set(pd.to_datetime(df_meta['source_date']).dt.date)
+            scr_date=set(pd.to_datetime(df_meta[
+                Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value],
+                format=Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value,
+                errors='coerce').dropna().dt.date)
             date_missing=set(dates[1:])-scr_date
             if date_missing:
                 min_date=min(set(dates[1:])-scr_date) - timedelta(days=1)
@@ -53,10 +56,10 @@ class Metaprocess():
                 return_min_dates=(min_date+timedelta(days=1)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)
             else:
                return_dates=[]
-            return_min_dates=datetime(2200,1,1).date()
+               return_min_dates=datetime(2200,1,1).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)
         except s3_bucket_meta.session.client('s3').exceptions.NoSuchKey:
-            return_dates = [(min_date + timedelta(days=x)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value) for x in range(0, (today-min_date).days + 1)]
-            return_min_date = first_date
+            return_dates = [(min_date + timedelta(days=x)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value) 
+                            for x in range(0, (today-min_date).days + 1)]
+            return_min_dates= first_date
         return return_min_dates,return_dates
-        
-    
+
