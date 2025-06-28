@@ -39,7 +39,7 @@ class TestMetaProcessMethod(unittest.TestCase):
                                               self.s3_secret_key,
                                               self.s3_endpoint_url,
                                               self.s3_bucket_name)
-
+        self.dates=[(datetime.today().date() - timedelta(days=day)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value) for day in range(8)]
     def tearDown(self):
         """executing after unittesting"""
         self.mock_s3.stop()
@@ -51,7 +51,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         #test init
         meta_key='meta.csv'
         #method execution
-        Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
+        Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         #Read meta file
         data = self.s3_bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
         out_buffer= StringIO(data)
@@ -69,7 +69,7 @@ class TestMetaProcessMethod(unittest.TestCase):
                 ]
             }
         )
-    def test_update_meta_file_empty_dat_list(self):
+    def test_update_meta_file_empty_data_list(self):
         #expected results
         retrun_exp=True
         log_exp='The dataframe is empty! no file will be written'
@@ -78,9 +78,10 @@ class TestMetaProcessMethod(unittest.TestCase):
         meta_key='meta.csv'
         #method excutions
         with self.assertLogs() as logm:
-            result=Metaprocess.meta_file_update(meta_key,date_list,self.s3_bucket_meta)
+            result=Metaprocess.meta_file_update(date_list,meta_key,self.s3_bucket_meta)
             self.assertIn(log_exp,logm.output[1])
         self.assertEqual(log_exp,result)
+
     def test_update_meta_file_meta_file_ok(self):
         #exepected resutls
         date_list_old=['2022-12-25','2022-12-26']
@@ -92,16 +93,14 @@ class TestMetaProcessMethod(unittest.TestCase):
         meta_content=(
             f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value}'
             f'{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
-            f'{date_list_old[0]}'
-            f'{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
-            f'{date_list_new[1]}'
-            f'{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
+            f"{date_list_old[0]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n"
+            f'{date_list_new[1]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
         )
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
         Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         #Read mete file
-        data = self.bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
+        data = self.s3_bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
         out_buffer= StringIO(data)
         df_meta_result = pd.read_csv(out_buffer)
         date_list_rest=list(df_meta_result[Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value])
@@ -117,6 +116,7 @@ class TestMetaProcessMethod(unittest.TestCase):
                 ]
             }
         )
+        
     def test_update_meta_file_meta_file_wrong(self):
                 #exepected resutls
         date_list_old=['2022-12-25','2022-12-26']
@@ -127,11 +127,11 @@ class TestMetaProcessMethod(unittest.TestCase):
         meta_key='meta.csv'
         meta_content=(
             f'wrong_file{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
-            f'{date_list_old[0]}'
-            f'{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
-            f'{date_list_new[1]}'
-            f'{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
+            f"{date_list_old[0]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n"
+            f"{date_list_new[1]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n"
         )
+
+
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
         Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
@@ -145,25 +145,29 @@ class TestMetaProcessMethod(unittest.TestCase):
                 ]
             }
         )
-    def test_retrun_date_list_no_meta_file(self):
+   
+
+#return_date_list
+    def test_return_date_list_no_meta_file(self):
         #exepected results
         date_list_exp=[(datetime.today().date()-timedelta(days=day)).
                        strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value) for day in range(4)]
         min_date_exp=[(datetime.today().today()-timedelta(days=2)).
                       strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)]
         #Test init
-        first_date=min_date_exp
+        first_date=min_date_exp[0]
         meta_key='meta.csv'
         #Method execution
-        min_date_return,date_list_retrun=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
+        min_date_return,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
         #Test after method execution
-        self.assertEqual(set(date_list_exp),set(date_list_retrun))
+        self.assertEqual(set(date_list_exp),set(date_list_return))
         self.assertEqual(min_date_exp,min_date_return)
+        
     def test_return_date_list_meta_file_ok(self):
         min_date_exp=[
-            (datetime.today().date()-timedelta(days=1).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)),
-            (datetime.today().date()-timedelta(days=2).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)),
-            (datetime.today().date()-timedelta(days=7).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value))
+            (datetime.today().date()-timedelta(days=1)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value),
+            (datetime.today().date()-timedelta(days=2)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value),
+            (datetime.today().date()-timedelta(days=7)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)
         ]
         date_list_exp=[
             [datetime.today().date()-timedelta(days=day).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(3)],
@@ -172,18 +176,17 @@ class TestMetaProcessMethod(unittest.TestCase):
         ]
         meta_key='meta.csv'
         meta_content=(
-            f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value}',
+            f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value},'
             f'{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
-            f'{self.dates[3],self.dates[0]}\n'
-            f'{self.dates[4],self.dates[0]}'
+            f'{self.dates[3]},{self.dates[0]}\n'
+            f'{self.dates[4]},{self.dates[0]}'
         )
-
         self.s3_bucket.put_object(Body=meta_content,key=meta_key)
         first_date_list=[self.dates[1],self.dates[4],self.dates[7]]
         for count,first_date in enumerate(first_date_list):
-            min_date_return,date_list_return=Metaprocess.retrun_date_list(first_date,meta_key,self.s3_bucket_meta)
-            self.assertEqual(count(min_date_exp),min_date_return)
-            self.assertEqual(count(date_list_exp),set(date_list_return))
+            min_date_return,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
+            self.assertEqual(min_date_exp[count],min_date_return)
+            self.assertEqual(set(date_list_exp[count]),set(date_list_return))
         self.s3_bucket.delete_objects(
             Delete={
                 'Objects':[                
@@ -191,19 +194,19 @@ class TestMetaProcessMethod(unittest.TestCase):
                 ]
             }
         )
-        def retrun_date_list_meta_file_wrong(self):
+    def test_return_date_list_meta_file_wrong(self):
             meta_key='meta.csv'
             meta_content=(
                 f'wrong_column{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
-                f'{self.dates[3],self.dates[0]}\n'
-                f'{self.dates[4],self.dates[0]}'
+                f'{self.dates[3]},{self.dates[0]}\n'
+                f'{self.dates[4]},{self.dates[0]}'
             )
             self.s3_bucket_meta.s3_bucket.put_object(Body=meta_content,key=meta_key)
             first_date=self.dates[1]
             with self.assertRaises(KeyError):
-                Metaprocess.retrun_date_list(first_date,meta_key,self.s3_bucket_meta)
+                Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
         #Cleaning after key
-        self.s3_bucket.delete_objects(
+            self.s3_bucket.delete_objects(
             Delete={
                 'Objects':[                
                 {'Key':meta_key}
@@ -211,22 +214,30 @@ class TestMetaProcessMethod(unittest.TestCase):
             }
         )
 
-        def test_return_date_list_empty_date_list(self):
-            min_darte_exp='2200-01-01'
+    def test_return_date_list_empty_date_list(self):
+            min_date_exp='2200-01-01'
             date_list_exp=[]
             meta_key='meta.csv'
             meta_content=(
-                f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value}'
+                f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value},'
                 f'{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
                 f'{self.dates[0]},{self.dates[0]}\n'
-                f'{self.dates[1]},{self.dates[0]}'
+                f'{self.dates[1]},{self.dates[0]}\n'
             )
             self.s3_bucket_meta.put_object(Body=meta_content,Key=meta_key)
             first_date=self.dates[0]
             #method execution
-            min_date_retrun,date_list_retrun=Metaprocess.retrun_date_list(first_date,meta_key,self.s3_bucket_meta)
+            min_date_retrun,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
             #Testing after method execution
-            self.assertEqual(min_darte_exp,min_date_retrun)
-            self.assertEqula(date_list_exp,date_list_retrun)
+            self.assertEqual(min_date_exp,min_date_retrun)
+            self.assertEqual(date_list_exp,date_list_return)
+    #Cleaning after key
+            self.s3_bucket.delete_objects(
+            Delete={
+                'Objects':[                
+                {'Key':meta_key}
+                ]
+            }
+        )            
 if __name__=='__main__':
     unittest.main()
