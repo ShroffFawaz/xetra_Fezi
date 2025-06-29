@@ -161,7 +161,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         min_date_return,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
         #Test after method execution
         self.assertEqual(set(date_list_exp),set(date_list_return))
-        self.assertEqual(min_date_exp,min_date_return)
+        self.assertEqual(min_date_exp,[min_date_return])
         
     def test_return_date_list_meta_file_ok(self):
         min_date_exp=[

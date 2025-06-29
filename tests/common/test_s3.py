@@ -5,7 +5,7 @@ from moto import mock_aws
 from xetra.common.s3 import s3Bucketconncetor
 import pandas as pd
 from io import StringIO,BytesIO
-from xetra.common.Custom_exceptions import WrongformatExcetion
+from xetra.common.Custom_exceptions import WrongFormatException
 
 
 class TestS3BucketConnectorMethod(unittest.TestCase):
@@ -80,9 +80,9 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         file_format='csv'
         df_empty=pd.DataFrame()
         with self.assertLogs() as logm:
-            resutl=self.s3_bucket_conn.write_df_to_s3(df_empty,key,file_format)
+            result=self.s3_bucket_conn.write_df_to_s3(df_empty,key,file_format)
             self.assertEqual(log_exp,logm.output[0])
-        self.assertEqual(return_exp,resutl)
+        self.assertEqual(return_exp,result)
 
 
     def test_write_df_to_s3_csv(self):
@@ -110,7 +110,7 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         with self.assertLogs() as logm:
             result=self.s3_bucket_conn.write_df_to_s3(df_exp,key_exp,file_format)
             self.assertIn(log_exp,logm.output[0])
-        data = self.s3.Object(key=key_exp).get().get('Body').read()
+        data = self.s3.Object(self.s3_bucket_name,key=key_exp).get().get('Body').read()
         out_buffer= BytesIO(data)
         df_result = pd.read_parquet(out_buffer)
         self.assertEqual(return_exp,result)
@@ -123,7 +123,7 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         log_exp=f'The file format {format_exp} is not supported to be written to s3!'
 
         with self.assertLogs() as logm:
-            with self.assertRaises(WrongformatExcetion):
+            with self.assertRaises(WrongFormatException):
                 self.s3_bucket_conn.write_df_to_s3(df_exp,key_exp,format_exp)
             self.assertIn(log_exp,logm.output[0])
 
