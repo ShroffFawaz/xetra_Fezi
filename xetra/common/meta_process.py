@@ -18,7 +18,7 @@ class Metaprocess():
             META_SOURCE_DATE_COL='source_date'
             META_PROCESS_COL='process_col'
             META_PROCESS_DATE_FORMAT='%Y-%m-%d'
-            META_FILE_FORMAT='%Y-%m-%d'
+            META_FILE_FORMAT='csv'
 
     @staticmethod
     def meta_file_update(meta_key:str,extract_date_list:list,s3_bucket_meta:s3Bucketconncetor):
