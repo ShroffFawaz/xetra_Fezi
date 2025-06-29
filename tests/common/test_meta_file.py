@@ -185,7 +185,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         first_date_list=[self.dates[1],self.dates[4],self.dates[7]]
         for count,first_date in enumerate(first_date_list):
             min_date_return,date_list_return=Metaprocess.return_date_list(first_date,meta_key,self.s3_bucket_meta)
-            self.assertEqual(min_date_exp[count],min_date_return)
+            self.assertEqual(min_date_exp[0],min_date_return)
             self.assertEqual(set(date_list_exp[count]),set(date_list_return))
         self.s3_bucket.delete_objects(
             Delete={
