@@ -9,7 +9,7 @@ from io import StringIO,BytesIO
 from typing import Union
 from datetime import datetime,timedelta  
 from enum import Enum
-from xetra.common.Custom_exceptions import WrongformatExcetion 
+from xetra.common.Custom_exceptions import WrongFormatException 
 class S3FileType(Enum):
     CSV='csv'
     PARQUET='parquet'
@@ -70,7 +70,7 @@ class s3Bucketconncetor():
             data_frame.to_parquet(out_buffer, index=False)
             return self._put_object(out_buffer,key)
         self._logger.info('he file format %s is not supported to be written to s3!',file_format)
-        raise WrongformatExcetion
+        raise WrongFormatException
     def _put_object(self, out_buffer:Union[StringIO ,BytesIO], key:str):
         """
         Helper function for self.write_df_to_s3()
