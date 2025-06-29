@@ -1,10 +1,10 @@
 """Custom Exceptions"""
-class WrongFormatException():
+class WrongFormatException(Exception):
     """
     Raised when the file format is not supported
     """
     pass
-class WrongMetaFileException():
+class WrongMetaFileException(Exception):
     """
     Raised when the metadata file is incorrect or corrupted
     """
