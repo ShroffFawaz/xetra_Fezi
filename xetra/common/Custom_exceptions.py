@@ -1,11 +1,11 @@
 """Custom Exceptions"""
 class WrongFormatException():
     """
-    Raised when unsupported format is used for writing
+    Raised when the input format is wrong
     """
     pass
 class WrongMetaFileException():
     """
-    Raised when meta file has wrong format 
+    Raised when the meta file format is wrong
     """
     pass
