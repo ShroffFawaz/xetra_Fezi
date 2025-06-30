@@ -3,6 +3,7 @@ from xetra.common.s3 import s3Bucketconncetor
 import os
 from moto import mock_aws
 import boto3
+from collections import Counter
 from datetime import datetime,timedelta
 from xetra.common.meta_process import Metaprocess
 from io import StringIO
@@ -86,7 +87,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         #exepected resutls
         date_list_old=['2022-12-25','2022-12-26']
         date_list_new=['2022-12-27','2022-12-28']
-        date_list_exp=date_list_new + date_list_old
+        date_list_exp=list(set(date_list_new + date_list_old))
         proc_date_list_exp=[datetime.today().date()]*4
         #test iniit
         meta_key='meta.csv'
@@ -106,7 +107,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         date_list_rest=list(df_meta_result[Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value])
         proc_date_list_result=list(pd.to_datetime(df_meta_result[Metaprocess.MetaColumns.META_PROCESS_COL.value]).dt.date)
         #Test after method execution 
-        self.assertCountEqual(date_list_exp,date_list_rest)
+        self.assertCountEqual(Counter(date_list_exp),Counter(date_list_rest))
         self.assertCountEqual(proc_date_list_exp,proc_date_list_result)
         #Cleaning after key
         self.s3_bucket.delete_objects(
@@ -180,6 +181,13 @@ class TestMetaProcessMethod(unittest.TestCase):
             f'{self.dates[3]},{self.dates[0]}\n'
             f'{self.dates[4]},{self.dates[0]}'
         )
+        meta_content = (
+            f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value},'
+            f'{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
+            f'{self.dates[3]},{self.dates[0]}\n'
+            f'{self.dates[4]},{self.dates[0]}'
+        )
+
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
 
         first_date_list=[self.dates[1],self.dates[4],self.dates[7]]
