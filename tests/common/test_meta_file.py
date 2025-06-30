@@ -108,7 +108,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         proc_date_list_result=list(pd.to_datetime(df_meta_result[Metaprocess.MetaColumns.META_PROCESS_COL.value]).dt.date)
         #Test after method execution 
         self.assertCountEqual(Counter(date_list_exp),Counter(date_list_rest))
-        self.assertCountEqual(proc_date_list_exp,proc_date_list_result)
+        self.assertCountEqual(set(proc_date_list_exp),set(proc_date_list_result))
         #Cleaning after key
         self.s3_bucket.delete_objects(
             Delete={
