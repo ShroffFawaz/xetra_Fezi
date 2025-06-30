@@ -1,6 +1,6 @@
 import collections
 from enum import Enum
-from logging import log
+import logging
 from xetra.common.s3 import s3Bucketconncetor
 import pandas as pd
 from datetime import datetime,timedelta 
@@ -24,6 +24,7 @@ class Metaprocess():
     @staticmethod
     def meta_file_update(meta_key:str,extract_date_list:list,s3_bucket_meta:s3Bucketconncetor):
         if not extract_date_list:
+            log=logging.getLogger(__name__)
             log.info("The dataframe is empty! No file will be written!")
             return "The dataframe is empty! No file will be written!" 
         # Create an Empty DataFrame with Correct Column's
