@@ -69,7 +69,7 @@ class s3Bucketconncetor():
             out_buffer = BytesIO()
             data_frame.to_parquet(out_buffer, index=False)
             return self._put_object(out_buffer,key)
-        self._logger.info('he file format %s is not supported to be written to s3!',file_format)
+        self._logger.info('The file format %s is not supported to be written to s3!',file_format)
         raise WrongFormatException
     def _put_object(self, out_buffer:Union[StringIO ,BytesIO], key:str):
         """

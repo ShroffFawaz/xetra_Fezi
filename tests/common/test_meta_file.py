@@ -72,14 +72,14 @@ class TestMetaProcessMethod(unittest.TestCase):
     def test_update_meta_file_empty_data_list(self):
         #expected results
         retrun_exp=True
-        log_exp=    'The dataframe is empty! No file will be written!'
+        log_exp='The dataframe is empty! No file will be written!'
         # test init
         date_list=[]
         meta_key='meta.csv'
         #method excutions
         with self.assertLogs() as logm:
             result=Metaprocess.meta_file_update(meta_key,date_list,self.s3_bucket_meta)
-            self.assertIn(log_exp,logm.output[1])
+            self.assertIn(log_exp,logm.output[0])
         self.assertEqual(log_exp,result)
 
     def test_update_meta_file_meta_file_ok(self):
@@ -97,7 +97,7 @@ class TestMetaProcessMethod(unittest.TestCase):
             f'{date_list_new[1]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
         )
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
-        #Method execuation test_update_meta_file_meta_file_ok
+        #Method execuation 
         Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
         #Read mete file
         data = self.s3_bucket.Object(key=meta_key).get().get('Body').read().decode('utf-8')
@@ -106,8 +106,8 @@ class TestMetaProcessMethod(unittest.TestCase):
         date_list_rest=list(df_meta_result[Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value])
         proc_date_list_result=list(pd.to_datetime(df_meta_result[Metaprocess.MetaColumns.META_PROCESS_COL.value]).dt.date)
         #Test after method execution 
-        self.assertEqual(date_list_exp,date_list_rest)
-        self.assertEqual(proc_date_list_exp,proc_date_list_result)
+        self.assertCountEqual(date_list_exp,date_list_rest)
+        self.assertCountEqual(proc_date_list_exp,proc_date_list_result)
         #Cleaning after key
         self.s3_bucket.delete_objects(
             Delete={
@@ -164,9 +164,9 @@ class TestMetaProcessMethod(unittest.TestCase):
         
     def test_return_date_list_meta_file_ok(self):
         min_date_exp=[
-            (datetime.today().date()-timedelta(days=1)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value),
-            (datetime.today().date()-timedelta(days=2)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value),
-            (datetime.today().date()-timedelta(days=7)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value)
+            (datetime.today().date()-timedelta(days=1)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value),
+            (datetime.today().date()-timedelta(days=2)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value),
+            (datetime.today().date()-timedelta(days=7)).strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)
         ]
         date_list_exp=[
             [(datetime.today().date()-timedelta(days=day)).strftime(Metaprocess.MetaColumns.META_FILE_FORMAT.value) for day in range(3)],

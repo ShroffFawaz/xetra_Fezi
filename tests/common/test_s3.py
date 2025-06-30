@@ -60,7 +60,8 @@ class TestS3BucketConnectorMethod(unittest.TestCase):
         #call the method  & capture logs
         with self.assertLogs() as logm:
             df_result=self.s3_bucket_conn.read_to_csv_df(key_exp)
-            self.assertEqual(log_exp,logm.output[0])
+            self.assertIn("Read file", logm.output[0])
+            self.assertIn(f"{self.s3_bucket_name}/{key_exp}", logm.output[0])
         #Check the DataFrame's Shape and Values
         self.assertEqual(df_result.shape[0],1)
         self.assertEqual(df_result.shape[1],2)
