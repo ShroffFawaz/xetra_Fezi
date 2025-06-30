@@ -10,6 +10,9 @@ from typing import Union
 from datetime import datetime,timedelta  
 from enum import Enum
 from xetra.common.Custom_exceptions import WrongFormatException 
+
+
+
 class S3FileType(Enum):
     CSV='csv'
     PARQUET='parquet'
@@ -42,7 +45,7 @@ class s3Bucketconncetor():
         files = [obj.key for obj in self._bucket.objects.filter(Prefix=prefix)]
         return files   
     def read_to_csv_df(self, key:str, sep=',', decoding='utf-8'):
-        self._logger.info('Read file %s %s %s',self.endpoint_url,self._bucket.name,key)
+        self._logger.info(f"Read file {self.endpoint_url}/{self._bucket.name}/{key}")
         csv_obj = self._bucket.Object(key=key).get().get('Body').read().decode(decoding)
         data = StringIO(csv_obj)
         date_frame = pd.read_csv(data, delimiter=sep)
