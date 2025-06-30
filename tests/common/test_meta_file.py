@@ -91,7 +91,7 @@ class TestMetaProcessMethod(unittest.TestCase):
         #test iniit
         meta_key='meta.csv'
         meta_content=(
-            f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value}'
+            f'{Metaprocess.MetaColumns.META_SOURCE_DATE_COL.value},'
             f'{Metaprocess.MetaColumns.META_PROCESS_COL.value}\n'
             f"{date_list_old[0]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n"
             f'{date_list_new[1]},{datetime.today().strftime(Metaprocess.MetaColumns.META_PROCESS_DATE_FORMAT.value)}\n'
@@ -134,7 +134,7 @@ class TestMetaProcessMethod(unittest.TestCase):
 
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
-        Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
+        Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         with self.assertRaises(WrongMetaFileException):
             Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         #Cleaning after key
