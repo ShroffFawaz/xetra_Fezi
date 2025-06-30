@@ -134,9 +134,8 @@ class TestMetaProcessMethod(unittest.TestCase):
 
         self.s3_bucket.put_object(Body=meta_content,Key=meta_key)
         #Method execuation 
-        Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
         with self.assertRaises(WrongMetaFileException):
-            Metaprocess.meta_file_update(date_list_exp,meta_key,self.s3_bucket_meta)
+            Metaprocess.meta_file_update(meta_key,date_list_exp,self.s3_bucket_meta)
         #Cleaning after key
         self.s3_bucket.delete_objects(
             Delete={
