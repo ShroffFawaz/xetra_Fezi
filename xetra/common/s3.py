@@ -7,6 +7,7 @@ import pandas as pd
 import boto3
 from io import StringIO,BytesIO
 from typing import Union
+from memory_profiler import profile
 from datetime import datetime,timedelta  
 from enum import Enum
 from xetra.common.Custom_exceptions import WrongFormatException 
@@ -33,7 +34,7 @@ class s3Bucketconncetor():
                                    aws_secret_access_key=os.environ[secret_key])
         self._s3=self.session.resource(service_name='s3',endpoint_url=endpoint_url)
         self._bucket=self._s3.Bucket(bucket)
-    
+    @profile
     def list_files_in_prefix(self,prefix:str):        
         """
         listing all the perfix files of s3 bucket
@@ -43,15 +44,15 @@ class s3Bucketconncetor():
         return:files list all the file names contain the perfix in the key 
         """
         files = [obj.key for obj in self._bucket.objects.filter(Prefix=prefix)]
-        return files   
+        return files  
+    @profile 
     def read_to_csv_df(self, key:str, sep=',', decoding='utf-8'):
         self._logger.info(f"Read file {self.endpoint_url}/{self._bucket.name}/{key}")
         csv_obj = self._bucket.Object(key=key).get().get('Body').read().decode(decoding)
         data = StringIO(csv_obj)
         date_frame = pd.read_csv(data, delimiter=sep)
         return date_frame
-    
-    
+    @profile
     def write_df_to_s3(self,data_frame:pd.DataFrame, key:str,file_format:str):
         """
         writing a Pandas DataFrame to S3    
@@ -74,6 +75,7 @@ class s3Bucketconncetor():
             return self._put_object(out_buffer,key)
         self._logger.info('The file format %s is not supported to be written to s3!',file_format)
         raise WrongFormatException
+    @profile
     def _put_object(self, out_buffer:Union[StringIO ,BytesIO], key:str):
         """
         Helper function for self.write_df_to_s3()

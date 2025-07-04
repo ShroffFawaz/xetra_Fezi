@@ -1,6 +1,7 @@
 """Xetra ETL Component"""
 from typing import NamedTuple
 import logging
+from memory_profiler import profile
 from xetra.common.s3 import s3Bucketconncetor
 import pandas as pd
 from datetime import datetime,timedelta
@@ -75,7 +76,7 @@ class XetraETL:
         self.extract_date_list=extract_date_list
         self.meta_update_list=[date for  date in self.extract_date_list 
                                if date>=self.extract_date]
-        
+    @profile
     def extract(self):
         self._logger.info('Extracting Xetra source file started !')
         files=[key for date in self.extract_date_list
@@ -87,6 +88,7 @@ class XetraETL:
                                  for file in files],ignore_index=True)
         self._logger.info('Extracting Xetra source file is finished......')
         return data_frame
+    @profile
     def transform(self,data_frame:pd.DataFrame):
         """
         Applies the necessary transformation to create report 1
@@ -113,7 +115,7 @@ class XetraETL:
         data_frame = data_frame[data_frame.Date >= self.extract_date].reset_index(drop=True)
         self._logger.info('Transformation for report 1 finished.')
         return data_frame
-
+    @profile
     def load(self,data_frame:pd.DataFrame):
         """
         Saves a Pandas DataFrame to the target
@@ -133,7 +135,7 @@ class XetraETL:
         Metaprocess.meta_file_update(self.meta_key,self.meta_update_list,self.s3_bucket_trg)
         self._logger.info('Xetra meta file successfully updated.')
         return True
-
+    @profile
     def etl_report1(self):
         #Extraction
         data_frame=self.extract()
